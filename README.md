@@ -95,23 +95,4 @@ Pour explorer les résultats dans le navigateur web :
   streamlit run src/dashboard.py
   ```
 
----
 
-## 🎯 Ce qu'il faut dire à la Soutenance (Script Oral)
-
-### 1. Introduction (30 secondes) :
-> *"Madame, pour mon projet Big Data, j'ai valorisé le modèle de Machine Learning de mon PFE sur la prédiction du Churn Télécom. Dans la réalité d'un opérateur, les volumes de données (appels, internet, recharges) se comptent en millions de transactions quotidiennes. Un script classique avec Pandas sature rapidement la mémoire de la machine."*
-
-### 2. Le Cœur du Traitement Big Data (1 minute) :
-> *"J'ai donc conçu un pipeline Big Data optimisé :*  
-> *• Ingestion et alignement des 46 variables comportementales des clients.*  
-> *• Inférence Machine Learning scalable capable de traiter 34,000 clients en moins d'un dixième de seconde.*  
-> *• Stockage des résultats au format **Apache Parquet**, réduisant l'espace disque de 96.6% par rapport au CSV grâce à la compression Snappy et l'organisation en colonnes."*
-
-### 3. La Démonstration du Tableau de Bord (1 minute) :
-> *"Enfin, j'ai développé un Dashboard interactif avec Streamlit. En un clic, l'équipe commerciale peut filtrer les clients à haut risque de Churn (probabilité > 65%) et exporter la liste pour lancer des offres de rétention immédiates."*
-
----
-
-## 👨‍💻 Auteur
-* **Ahmed Channoufi** — *Projet Académique Big Data & Intégration PFE*
