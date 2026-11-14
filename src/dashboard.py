@@ -11,7 +11,7 @@ st.set_page_config(
 
 # Titre principal
 st.title("📶 Dashboard de Prédiction du Churn Télécom")
-st.write("Projet Big Data — Analyse et Rétention des clients (Tunisie Telecom)")
+st.write("Projet Big Data — Analyse et Rétention des clients Télécom")
 
 # 1. Chargement des données Parquet
 @st.cache_data

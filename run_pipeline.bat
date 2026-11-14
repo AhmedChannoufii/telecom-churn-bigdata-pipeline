@@ -1,6 +1,6 @@
 @echo off
 echo ====================================================================
-echo    EXECUTION DU PIPELINE BIG DATA : CHURN TELECOM (TUNISIE TELECOM)
+echo    EXECUTION DU PIPELINE BIG DATA : CHURN TELECOM
 echo ====================================================================
 echo.
 

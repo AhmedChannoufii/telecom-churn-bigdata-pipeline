@@ -1,4 +1,4 @@
-# 📶 Telecom Churn Big Data Pipeline (Tunisie Telecom)
+# 📶 Telecom Churn Big Data Pipeline
 
 > **Pipeline Big Data & Architecture de Prédiction du Churn Télécom utilisant Apache Parquet, PySpark & XGBoost.**
 
