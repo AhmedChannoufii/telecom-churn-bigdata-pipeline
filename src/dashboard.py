@@ -92,13 +92,14 @@ search = st.text_input("Rechercher par Code Contrat :", "")
 if search:
     df_filtre = df_filtre[df_filtre["CODE_CONTRAT"].astype(str).str.contains(search)]
 
-# Affichage des colonnes importantes
-cols = ["CODE_CONTRAT", "PROBABILITE_CHURN", "NIVEAU_RISQUE", "PREDICTION_CHURN"]
-for c in ["ANC_M", "montant_recharge_m0", "internet_m0"]:
-    if c in df_filtre.columns:
-        cols.append(c)
+# Affichage des 3 colonnes demandées uniquement
+cols = ["CODE_CONTRAT", "PROBABILITE_CHURN", "NIVEAU_RISQUE"]
 
-st.dataframe(df_filtre[cols].sort_values(by="PROBABILITE_CHURN", ascending=False).head(200), use_container_width=True)
+st.dataframe(
+    df_filtre[cols].sort_values(by="PROBABILITE_CHURN", ascending=False).head(200),
+    use_container_width=True,
+    hide_index=True
+)
 
 # 6. Bouton de Téléchargement CSV
 csv_data = df_filtre[cols].to_csv(index=False).encode("utf-8")
