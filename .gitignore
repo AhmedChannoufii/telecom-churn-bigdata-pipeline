@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.streamlit/
+*.log
+# Ne pas ignorer les fichiers modèles et de sortie nécessaires à la démo
