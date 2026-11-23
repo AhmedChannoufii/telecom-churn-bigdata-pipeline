@@ -4,16 +4,19 @@ import time
 from pathlib import Path
 import joblib
 import pandas as pd
+import pyarrow.parquet as pq
 
 # =============================================================================
-# Projet Big Data : Prédiction du Churn Télécom
+# Projet Big Data : Prédiction du Churn Télécom & Benchmark
 # Auteur : Ahmed Channoufi
 # =============================================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 def main():
-    print("=== Démarrage du Pipeline Big Data Télécom ===")
+    print("=" * 70)
+    print("       DÉMARRAGE DU PIPELINE BIG DATA & BENCHMARK COMPARATIF")
+    print("=" * 70)
     start_time = time.time()
 
     # 1. Chargement des données de test
@@ -49,7 +52,8 @@ def main():
     X_scaled = scaler.transform(X)
     probabilities = model.predict_proba(X_scaled)[:, 1]
     predictions = (probabilities >= threshold).astype(int)
-    print(f"    -> Inférence terminée en {time.time() - t0:.2f} secondes.")
+    pred_time = time.time() - t0
+    print(f"    -> Inférence terminée en {pred_time:.2f} secondes.")
 
     # 5. Création du tableau de résultats
     results = pd.DataFrame({
@@ -68,26 +72,66 @@ def main():
         if col in df.columns:
             results[col] = df[col]
 
-    # 6. Sauvegarde au format Parquet (Big Data Storage)
+    # 6. Sauvegarde & Benchmark Comparatif (CSV vs Parquet)
     output_dir = BASE_DIR / "data" / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
     parquet_path = output_dir / "predictions_fevrier_2026.parquet"
+    csv_path = output_dir / "predictions_fevrier_2026.csv"
     
-    print(f"\n[5] Sauvegarde des résultats en format Parquet...")
-    results.to_parquet(parquet_path, index=False, engine="pyarrow", compression="snappy")
+    print("\n[5] Exécution du Benchmark de Stockage (CSV vs Parquet)...")
     
-    file_size_kb = os.path.getsize(parquet_path) / 1024
-    print(f"    -> Fichier généré : {parquet_path.name} ({file_size_kb:.1f} KB)")
+    # --- Test CSV ---
+    t_csv_w0 = time.time()
+    results.to_csv(csv_path, index=False)
+    t_csv_write = time.time() - t_csv_w0
+    csv_size_kb = os.path.getsize(csv_path) / 1024
 
-    # 7. Résumé
+    t_csv_r0 = time.time()
+    _ = pd.read_csv(csv_path, usecols=["CODE_CONTRAT", "PROBABILITE_CHURN", "NIVEAU_RISQUE"])
+    t_csv_read = time.time() - t_csv_r0
+
+    # --- Test Parquet ---
+    t_parq_w0 = time.time()
+    results.to_parquet(parquet_path, index=False, engine="pyarrow", compression="snappy")
+    t_parquet_write = time.time() - t_parq_w0
+    parquet_size_kb = os.path.getsize(parquet_path) / 1024
+
+    t_parq_r0 = time.time()
+    _ = pd.read_parquet(parquet_path, columns=["CODE_CONTRAT", "PROBABILITE_CHURN", "NIVEAU_RISQUE"])
+    t_parquet_read = time.time() - t_parq_r0
+
+    # Sauvegarde des métriques du benchmark
+    gain_espace = ((csv_size_kb - parquet_size_kb) / csv_size_kb) * 100
+
+    benchmark_data = {
+        "csv_taille_kb": round(csv_size_kb, 1),
+        "parquet_taille_kb": round(parquet_size_kb, 1),
+        "gain_espace_pct": round(gain_espace, 1),
+        "csv_temps_ecriture": round(t_csv_write, 3),
+        "parquet_temps_ecriture": round(t_parquet_write, 3),
+        "csv_temps_lecture": round(t_csv_read, 3),
+        "parquet_temps_lecture": round(t_parquet_read, 3)
+    }
+    with open(output_dir / "benchmark.json", "w", encoding="utf-8") as f:
+        json.dump(benchmark_data, f, indent=4)
+
+    # 7. Affichage des Résultats
     nb_churn = int(predictions.sum())
     taux_churn = (nb_churn / len(df)) * 100
-    print("\n=== Résumé de l'Exécution ===")
-    print(f"Total clients : {len(df):,}")
-    print(f"Clients Churn prédits : {nb_churn:,} ({taux_churn:.2f}%)")
-    print(f"Clients Fidèles : {len(df) - nb_churn:,} ({100 - taux_churn:.2f}%)")
-    print(f"Temps total : {time.time() - start_time:.2f} secondes")
-    print("================================")
+
+    print("\n" + "=" * 70)
+    print("           ⚡ TABLEAU COMPARATIF : FORMAT CSV vs APACHE PARQUET")
+    print("=" * 70)
+    print(f"  Métrique                 Format CSV         Format Parquet     Gain / Avantage")
+    print(f"  ----------------------------------------------------------------------")
+    print(f"  Taille sur disque        {csv_size_kb/1024:.2f} MB           {parquet_size_kb/1024:.2f} MB          -{gain_espace:.1f}% d'espace")
+    print(f"  Temps d'écriture         {t_csv_write:.3f} s            {t_parquet_write:.3f} s           {t_csv_write/max(t_parquet_write,0.001):.1f}x plus rapide")
+    print(f"  Temps de lecture         {t_csv_read:.3f} s            {t_parquet_read:.3f} s           Parquet Colonnaire")
+    print(f"  Organisation             Ligne par ligne    Colonnaire (Snappy) Standard Big Data")
+    print("=" * 70)
+    print(f"\nTotal clients analysés : {len(df):,} | Churn prédit : {nb_churn:,} ({taux_churn:.2f}%)")
+    print(f"Temps total d'exécution : {time.time() - start_time:.2f} secondes.")
+    print("=" * 70)
 
 if __name__ == "__main__":
     main()

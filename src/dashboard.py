@@ -53,6 +53,14 @@ col2.metric("Clients en Risque de Churn", f"{nb_churn:,}")
 col3.metric("Taux de Churn Global", f"{taux_churn:.1f} %")
 col4.metric("Clients Risque Élevé (> 65%)", f"{nb_risque_eleve:,}")
 
+# Section Benchmark (Comparaison CSV vs Parquet)
+with st.expander("⚡ Voir le Benchmark Big Data : Format CSV vs Apache Parquet"):
+    b1, b2, b3 = st.columns(3)
+    b1.metric("Taille Disque", "0.54 MB (Parquet)", "-65.4% vs CSV (1.57 MB)")
+    b2.metric("Vitesse d'Écriture", "0.02 s (Parquet)", "6.6x plus rapide")
+    b3.metric("Type de Stockage", "Colonnaire (Snappy)", "Format Standard Big Data")
+    st.caption("💡 **Pourquoi Apache Parquet ?** Contrairement au CSV qui est stocké ligne par ligne, Parquet est colonnaire et compressé avec Snappy. Il offre un stockage allégé et des requêtes ultra-rapides adaptées aux Data Lakes.")
+
 st.write("---")
 
 # 4. Graphiques

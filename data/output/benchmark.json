@@ -1,0 +1,9 @@
+{
+    "csv_taille_kb": 1611.0,
+    "parquet_taille_kb": 558.0,
+    "gain_espace_pct": 65.4,
+    "csv_temps_ecriture": 0.144,
+    "parquet_temps_ecriture": 0.022,
+    "csv_temps_lecture": 0.008,
+    "parquet_temps_lecture": 0.022
+}
