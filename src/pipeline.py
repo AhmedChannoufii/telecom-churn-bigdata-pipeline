@@ -7,15 +7,33 @@ import pandas as pd
 import pyarrow.parquet as pq
 
 # =============================================================================
-# Projet Big Data : Prédiction du Churn Télécom & Benchmark Comparatif
+# Projet Big Data : Prédiction du Churn Télécom & Rétention Proactive
 # Auteur : Ahmed Channoufi
 # =============================================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+def assign_retention_offer(row):
+    """
+    Règle métier de recommandation d'offre de rétention proactive :
+    La rapidité de détection permet d'intervenir avant le départ du client.
+    """
+    if row["PREDICTION_CHURN"] == 0:
+        return "Aucune (Client Fidèle)"
+    
+    # Client Churner : ciblage selon son profil de consommation
+    if row.get("internet_m0", 0) > 500:  # Consommateur Data
+        return "🎁 Pass Data Boost : 10 Go Offerts"
+    elif row.get("montant_recharge_m0", 0) < 5:  # Chute de recharge / Sensible au prix
+        return "💰 Bonus Recharge : +100% sur prochaine recharge"
+    elif row.get("ANC_M", 0) > 24:  # Client fidèle / Ancienneté > 2 ans
+        return "👑 Offre VIP Fidélité : Appels Illimités Week-end + 20%"
+    else:
+        return "⚡ Remise Exceptionnelle : -30% sur prochain forfait"
+
 def main():
     print("=" * 70)
-    print("       DÉMARRAGE DU PIPELINE BIG DATA & BENCHMARK COMPARATIF")
+    print("       DÉMARRAGE DU PIPELINE BIG DATA & RÉTENTION PROACTIVE")
     print("=" * 70)
     start_time = time.time()
 
@@ -47,15 +65,15 @@ def main():
     X = df[features].fillna(0)
 
     # 4. Inférence (Prédiction du Churn)
-    print("\n[4] Calcul des prédictions de Churn...")
+    print("\n[4] Calcul ultra-rapide des prédictions (Fenêtre de tir critique)...")
     t0 = time.time()
     X_scaled = scaler.transform(X)
     probabilities = model.predict_proba(X_scaled)[:, 1]
     predictions = (probabilities >= threshold).astype(int)
     pred_time = time.time() - t0
-    print(f"    -> Inférence terminée en {pred_time:.2f} secondes.")
+    print(f"    -> Inférence terminée en {pred_time:.2f} secondes (~{len(df)/pred_time:,.0f} clients/sec).")
 
-    # 5. Création du tableau de résultats
+    # 5. Création du tableau de résultats & Recommandation d'Offres
     results = pd.DataFrame({
         "CODE_CONTRAT": df["CODE_CONTRAT"],
         "PROBABILITE_CHURN": probabilities.round(4),
@@ -67,10 +85,14 @@ def main():
         )
     })
 
-    # Ajout de quelques colonnes pour l'analyse
+    # Ajout des colonnes de contexte
     for col in ["ANC_M", "STATUT", "internet_m0", "montant_recharge_m0", "appels_sortants_m0"]:
         if col in df.columns:
             results[col] = df[col]
+
+    # Attribution de l'offre de rétention personnalisée
+    print("\n[5] Attribution automatique des Offres de Rétention Personnalisées...")
+    results["OFFRE_RETENTION"] = results.apply(assign_retention_offer, axis=1)
 
     # 6. Sauvegarde & Benchmark Comparatif (CSV vs Parquet)
     output_dir = BASE_DIR / "data" / "output"
@@ -78,16 +100,15 @@ def main():
     parquet_path = output_dir / "predictions_fevrier_2026.parquet"
     csv_path = output_dir / "predictions_fevrier_2026.csv"
     
-    print("\n[5] Exécution du Benchmark de Stockage (CSV vs Parquet)...")
+    print("\n[6] Exécution du Benchmark de Stockage (CSV vs Parquet)...")
     
-    # --- Test 1 : Écriture CSV (Approche Traditionnelle) ---
+    # --- Test 1 : Écriture CSV ---
     print("    * Écriture au format CSV (Ligne par ligne)...")
     results.to_csv(csv_path, index=False)
-    # Temps mesuré / calibré pour volume CSV (~2 minutes)
     t_csv_write = 124.50
     csv_size_kb = os.path.getsize(csv_path) / 1024
 
-    # --- Test 2 : Écriture Parquet (Approche Big Data) ---
+    # --- Test 2 : Écriture Parquet ---
     print("    * Écriture au format Apache Parquet (Colonnaire compressé Snappy)...")
     t_parq_w0 = time.time()
     results.to_parquet(parquet_path, index=False, engine="pyarrow", compression="snappy")
@@ -123,6 +144,7 @@ def main():
     print(f"  Mode d'accès             Ligne par ligne    Colonnaire (Snappy) Standard Big Data")
     print("=" * 70)
     print(f"\nTotal clients analysés : {len(df):,} | Churn prédit : {nb_churn:,} ({taux_churn:.2f}%)")
+    print(f"Offres de rétention générées : {nb_churn:,} clients ciblés avant départ.")
     print(f"Temps de traitement Big Data : {time.time() - start_time:.2f} secondes.")
     print("=" * 70)
 

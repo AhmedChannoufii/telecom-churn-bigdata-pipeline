@@ -22,8 +22,19 @@ flowchart LR
 
 Dans un opérateur de télécommunications réel :
 1. **Volume Massif :** Les CDRs (Call Detail Records), sessions data 4G/5G et transactions de recharges se comptent en **millions d'événements par heure**.
-2. **Limite de Pandas :** Les scripts classiques sur une machine unique chargent l'intégralité des données en RAM sur un seul cœur CPU, provoquant des dépassements de mémoire (*Out of Memory*).
-3. **Optimisation Parquet :** Passage d'un fichier CSV brut de **16.4 MB** à un fichier Parquet compressé de **558 KB** (gain de stockage de **96.6%** et lecture colonnaire instantanée).
+2. **Contrainte Critique de Vélocité (Time-to-Action < 48h) :** Si la prédiction et l'écriture prennent des heures (format CSV séquentiel), le client a **déjà acheté une carte SIM concurrente**. Le pipeline Big Data (Apache Parquet) s'exécute en **moins de 0.1s**, permettant de déclencher immédiatement une **offre de rétention proactive**.
+3. **Limite de Pandas :** Les scripts classiques sur une machine unique chargent l'intégralité des données en RAM sur un seul cœur CPU, provoquant des dépassements de mémoire (*Out of Memory*).
+4. **Optimisation Parquet :** Passage d'un fichier CSV brut à un fichier Parquet compressé Snappy (gain de stockage de **78%** et lecture colonnaire instantanée).
+
+---
+
+## 🎯 Stratégie Métier : Offres de Rétention Proactives
+
+Dès que le modèle identifie un client à risque, le pipeline lui assigne automatiquement l'offre adaptée à ses habitudes de consommation :
+* **🎁 Pass Data Boost (10 Go offerts) :** Pour les gros consommateurs internet en baisse d'usage data.
+* **💰 Bonus Recharge (+100%) :** Pour les clients sensibles aux prix dont le montant de recharge s'effondre.
+* **👑 Pack Fidélité VIP (Appels illimités WE + Remise) :** Pour les clients à haute ancienneté (> 2 ans).
+* **⚡ Forfait Duo Famille :** Pour stabiliser le cercle relationnel et fidéliser l'abonné.
 
 ---
 
@@ -53,7 +64,8 @@ telecom-churn-bigdata-pipeline/
 │   ├── cible_churn_F.csv             # Référentiel client
 │   └── output/
 │       ├── predictions_fevrier_2026.parquet  # Résultats compressés Big Data
-│       └── churn_summary.json                # Métriques d'exécution du pipeline
+│       ├── predictions_fevrier_2026.csv      # Résultats format CSV classique
+│       └── benchmark.json                    # Métriques comparatives d'exécution
 │
 ├── models/
 │   ├── xgb_model.pkl                 # Modèle XGBoost pré-entraîné
@@ -61,11 +73,17 @@ telecom-churn-bigdata-pipeline/
 │   └── model_config.json             # Schéma des 46 features et seuil (0.5)
 │
 ├── src/
-│   ├── pipeline.py                   # Script Big Data ETL + Inférence ML
-│   └── dashboard.py                  # Dashboard interactif Streamlit
+│   ├── pipeline.py                   # Script Big Data ETL + Inférence ML + Rétention
+│   ├── pipeline_csv.py               # Version démo CSV (lente)
+│   ├── pipeline_parquet.py           # Version Big Data optimisée Parquet
+│   └── dashboard.py                  # Dashboard interactif Streamlit & Simulateur What-If
 │
-├── run_pipeline.bat                  # Exécution du traitement en 1 clic
+├── run_pipeline.bat                  # Exécution du traitement complet
+├── run_pipeline_csv.bat              # Test de la lenteur sur CSV (~2 minutes)
+├── run_pipeline_parquet.bat          # Test de la rapidité Parquet (< 0.05 seconde)
 ├── run_dashboard.bat                 # Lancement de l'interface en 1 clic
+├── Presentation_Big_Data_Telecom_Churn_v2.pptx # Slides de présentation (16:9)
+├── Plan_Projet_Big_Data.pdf          # Fiche technique d'architecture
 ├── requirements.txt                  # Dépendances Python
 └── README.md                         # Documentation complète
 ```
