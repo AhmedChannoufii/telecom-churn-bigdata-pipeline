@@ -1,3 +1,4 @@
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -9,6 +10,8 @@ st.set_page_config(
     layout="wide"
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 # Titre principal
 st.title("📶 Dashboard de Prédiction du Churn Télécom")
 st.write("Projet Big Data — Analyse et Rétention des clients Télécom")
@@ -16,13 +19,14 @@ st.write("Projet Big Data — Analyse et Rétention des clients Télécom")
 # 1. Chargement des données Parquet
 @st.cache_data
 def load_data():
-    file_path = "data/output/predictions_fevrier_2026.parquet"
+    file_path = BASE_DIR / "data" / "output" / "predictions_fevrier_2026.parquet"
+    if not file_path.exists():
+        return None
     return pd.read_parquet(file_path)
 
-try:
-    df = load_data()
-except Exception as e:
-    st.error("Erreur : veuillez d'abord exécuter le pipeline (run_pipeline.bat)")
+df = load_data()
+if df is None:
+    st.error("⚠️ Fichier de résultats introuvable ! Veuillez d'abord exécuter le pipeline (double-cliquer sur run_pipeline.bat).")
     st.stop()
 
 # 2. Sidebar (Filtres)

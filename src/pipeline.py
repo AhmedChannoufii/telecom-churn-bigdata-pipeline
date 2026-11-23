@@ -1,6 +1,7 @@
 import os
 import json
 import time
+from pathlib import Path
 import joblib
 import pandas as pd
 
@@ -9,26 +10,33 @@ import pandas as pd
 # Auteur : Ahmed Channoufi
 # =============================================================================
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 def main():
     print("=== Démarrage du Pipeline Big Data Télécom ===")
     start_time = time.time()
 
     # 1. Chargement des données de test
-    data_path = "data/fevrier_2026.csv"
-    print(f"\n[1] Chargement des données depuis : {data_path} ...")
+    data_path = BASE_DIR / "data" / "fevrier_2026.csv"
+    print(f"\n[1] Chargement des données depuis : {data_path.name} ...")
+    if not data_path.exists():
+        print(f"[ERREUR] Fichier introuvable : {data_path}")
+        return
+
     df = pd.read_csv(data_path)
     print(f"    -> {len(df):,} lignes chargées avec succès.")
 
     # 2. Chargement de la configuration et des modèles ML
     print("\n[2] Chargement du modèle XGBoost et du Scaler...")
-    with open("models/model_config.json", "r", encoding="utf-8") as f:
+    config_path = BASE_DIR / "models" / "model_config.json"
+    with open(config_path, "r", encoding="utf-8") as f:
         config = json.load(f)
     
     features = config["features"]
     threshold = config.get("optimal_threshold", 0.5)
 
-    scaler = joblib.load("models/scaler.pkl")
-    model = joblib.load("models/xgb_model.pkl")
+    scaler = joblib.load(BASE_DIR / "models" / "scaler.pkl")
+    model = joblib.load(BASE_DIR / "models" / "xgb_model.pkl")
     print(f"    -> Modèle chargé avec {len(features)} features (Seuil: {threshold})")
 
     # 3. Préparation des variables (Features)
@@ -61,15 +69,15 @@ def main():
             results[col] = df[col]
 
     # 6. Sauvegarde au format Parquet (Big Data Storage)
-    output_dir = "data/output"
-    os.makedirs(output_dir, exist_ok=True)
-    parquet_path = os.path.join(output_dir, "predictions_fevrier_2026.parquet")
+    output_dir = BASE_DIR / "data" / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    parquet_path = output_dir / "predictions_fevrier_2026.parquet"
     
     print(f"\n[5] Sauvegarde des résultats en format Parquet...")
     results.to_parquet(parquet_path, index=False, engine="pyarrow", compression="snappy")
     
     file_size_kb = os.path.getsize(parquet_path) / 1024
-    print(f"    -> Fichier généré : {parquet_path} ({file_size_kb:.1f} KB)")
+    print(f"    -> Fichier généré : {parquet_path.name} ({file_size_kb:.1f} KB)")
 
     # 7. Résumé
     nb_churn = int(predictions.sum())
