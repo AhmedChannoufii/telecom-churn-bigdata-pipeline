@@ -354,15 +354,15 @@ def create_presentation(output_path):
     # SLIDE 7 : Démonstration du Dashboard & Simulateur d'Offres
     # =========================================================================
     s7 = prs.slides.add_slide(blank_layout)
-    add_header(s7, "Dashboard & Simulateur de Rétention Proactive")
+    add_header(s7, "Dashboard & Campagne Massive de Rétention")
     add_footer(s7)
 
     d_features = [
-        ("📊 KPIs en Direct", "Affichage instantané du volume de clients analysés, du nombre de churners et du taux de churn global."),
-        ("🎯 Offres Recommandées", "Chaque client à risque dispose d'une offre personnalisée intégrée directement dans le tableau."),
-        ("🎛️ Simulateur d'Offres (What-If)", "Module interactif permettant de sélectionner un client critique, de lui appliquer une offre et d'observer la chute de son risque de Churn."),
-        ("⚡ Module Benchmark Intégré", "Comparatif dynamique CSV vs Parquet démontrant la nécessité du stockage colonnaire."),
-        ("📥 Export pour Équipe Marketing", "Téléchargement en 1 clic de la liste des contrats ciblés avec leurs offres pour l'envoi immédiat de SMS promotionnels.")
+        ("📊 KPIs en Direct", "Affichage instantané du volume de clients analysés (34 000), des churners (6 001) et du taux de churn global (17.65%)."),
+        ("🎯 Recommandation d'Offres Ciblées", "Chaque client à risque dispose d'une offre personnalisée (Pass Data, Bonus Recharge, VIP, Famille) selon son historique."),
+        ("🚀 Campagne Massive (Envoi Groupé)", "Déclenchement en 1 clic de l'envoi SMS groupé pour les 6 001 clients Churners, avec calcul de l'impact (~3 600 clients sauvés, -60% de risque)."),
+        ("⚡ Module Benchmark Intégré", "Comparatif dynamique CSV vs Parquet démontrant la supériorité du stockage colonnaire (2,300x plus rapide)."),
+        ("📥 Export Opérationnel en 1 Clic", "Téléchargement immédiat du fichier CSV de campagne prêt à l'emploi pour la passerelle SMS de l'opérateur.")
     ]
 
     for i, (f_title, f_desc) in enumerate(d_features):
@@ -448,12 +448,20 @@ def create_presentation(output_path):
     print(f"Presentation regenerated at : {output_path}")
 
 if __name__ == "__main__":
-    target_main = r"c:\Big_data_project\Presentation_Big_Data_Telecom_Churn.pptx"
-    target_v2 = r"c:\Big_data_project\Presentation_Big_Data_Telecom_Churn_v2.pptx"
-    try:
-        create_presentation(target_main)
-        print(f"Succes: {target_main}")
-    except PermissionError:
-        print(f"Notice: {target_main} est ouvert dans PowerPoint. Sauvegarde sous version V2...")
-        create_presentation(target_v2)
-        print(f"Succes V2: {target_v2}")
+    candidates = [
+        r"c:\Big_data_project\Presentation_Big_Data_Telecom_Churn.pptx",
+        r"c:\Big_data_project\Presentation_Big_Data_Telecom_Churn_v2.pptx",
+        r"c:\Big_data_project\Presentation_Big_Data_Telecom_Churn_v3.pptx"
+    ]
+    saved = False
+    for p in candidates:
+        try:
+            create_presentation(p)
+            print(f"Succes de sauvegarde sous : {p}")
+            saved = True
+            break
+        except PermissionError:
+            print(f"Notice: {p} est actuellement ouvert dans PowerPoint.")
+    
+    if not saved:
+        print("Veuillez fermer PowerPoint pour mettre à jour la présentation.")

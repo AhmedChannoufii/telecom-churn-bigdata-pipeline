@@ -16,20 +16,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 def assign_retention_offer(row):
     """
     Règle métier de recommandation d'offre de rétention proactive :
-    La rapidité de détection permet d'intervenir avant le départ du client.
+    Attribution selon le profil historique de consommation avant décrochage.
     """
     if row["PREDICTION_CHURN"] == 0:
         return "Aucune (Client Fidèle)"
     
-    # Client Churner : ciblage selon son profil de consommation
-    if row.get("internet_m0", 0) > 500:  # Consommateur Data
+    # Client Churner : ciblage selon son historique de consommation
+    if row.get("ANC_M", 0) >= 36:  # Client fidèle / Ancienneté >= 3 ans
+        return "👑 Offre VIP Fidélité : Remise 25% + Appels WE"
+    elif row.get("internet_m1", 0) > 100 or row.get("internet_m2", 0) > 100:  # Consommateur Internet
         return "🎁 Pass Data Boost : 10 Go Offerts"
-    elif row.get("montant_recharge_m0", 0) < 5:  # Chute de recharge / Sensible au prix
+    elif row.get("appels_sortants_m1", 0) > 10 or row.get("appels_sortants_m2", 0) > 10:  # Consommateur Voix
+        return "⚡ Forfait Duo Famille : Appels gratuits favoris"
+    else:  # Client sensible au solde / recharge
         return "💰 Bonus Recharge : +100% sur prochaine recharge"
-    elif row.get("ANC_M", 0) > 24:  # Client fidèle / Ancienneté > 2 ans
-        return "👑 Offre VIP Fidélité : Appels Illimités Week-end + 20%"
-    else:
-        return "⚡ Remise Exceptionnelle : -30% sur prochain forfait"
 
 def main():
     print("=" * 70)
@@ -86,7 +86,7 @@ def main():
     })
 
     # Ajout des colonnes de contexte
-    for col in ["ANC_M", "STATUT", "internet_m0", "montant_recharge_m0", "appels_sortants_m0"]:
+    for col in ["ANC_M", "STATUT", "internet_m0", "internet_m1", "internet_m2", "montant_recharge_m0", "appels_sortants_m0", "appels_sortants_m1", "appels_sortants_m2"]:
         if col in df.columns:
             results[col] = df[col]
 

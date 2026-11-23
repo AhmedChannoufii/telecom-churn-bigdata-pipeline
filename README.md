@@ -28,13 +28,19 @@ Dans un opérateur de télécommunications réel :
 
 ---
 
-## 🎯 Stratégie Métier : Offres de Rétention Proactives
+## 🎯 Stratégie Métier : Offres de Rétention Proactives & Campagne Massive
 
-Dès que le modèle identifie un client à risque, le pipeline lui assigne automatiquement l'offre adaptée à ses habitudes de consommation :
-* **🎁 Pass Data Boost (10 Go offerts) :** Pour les gros consommateurs internet en baisse d'usage data.
-* **💰 Bonus Recharge (+100%) :** Pour les clients sensibles aux prix dont le montant de recharge s'effondre.
-* **👑 Pack Fidélité VIP (Appels illimités WE + Remise) :** Pour les clients à haute ancienneté (> 2 ans).
-* **⚡ Forfait Duo Famille :** Pour stabiliser le cercle relationnel et fidéliser l'abonné.
+Dès que le modèle identifie les clients à risque (6 001 clients), le pipeline et le tableau de bord permettent de déclencher une **Campagne de Rétention Massive** d'un seul coup (au lieu d'un traitement unitaire) :
+* **👑 Pack Fidélité VIP (2 077 clients) :** Clients fidèles (> 3 ans) à forte valeur (Remise 25% + Appels illimités week-end).
+* **💰 Bonus Recharge (1 995 clients) :** Clients sensibles au solde (+100% de bonus immédiat).
+* **⚡ Forfait Duo Famille (1 211 clients) :** Clients voix (Appels gratuits vers numéros favoris).
+* **🎁 Pass Data Boost (718 clients) :** Consommateurs Internet (10 Go offerts immédiatement).
+
+**Impact prévisionnel de la campagne :**
+* Taux d'acceptation moyen estimé : **~60%**
+* Clients sauvés de la résiliation : **~3 600 clients conservés**
+* Taux de Churn global résiduel : chute de **17.65% à 7.1%**
+* Chiffre d'affaires annuel sécurisé : **~1,080,000 DT** (sur base d'un ARPU moyen de 25 DT/mois)
 
 ---
 

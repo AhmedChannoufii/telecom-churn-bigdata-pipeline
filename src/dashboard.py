@@ -128,50 +128,86 @@ st.download_button(
 
 st.write("---")
 
-# 7. Simulateur d'Action de Rétention Proactive (What-If)
-st.subheader("🎯 Simulateur d'Action de Rétention Proactive (Sauver le Client)")
-st.info("💡 **Problématique Temps Réel :** Si le modèle met des heures à calculer, le client est déjà parti. Grâce au pipeline Big Data (< 0.1s), on peut lui proposer une offre de rétention immédiate.")
+# 7. Campagne de Rétention Massive (Envoi Groupé pour TOUS les Clients Churn)
+st.subheader("🎯 Campagne de Rétention Massive (Ciblage Groupé des 6 001 Clients Churn)")
+st.caption("⏱️ **Vélocité Big Data & Time-to-Action (< 48h) :** Traitement en lot (Batch) pour envoyer l'offre de rétention à TOUS les clients en risque de départ avant qu'ils n'achètent une SIM concurrente.")
 
-sim_col1, sim_col2 = st.columns([1, 1])
+# Récupération de tous les clients en Churn
+df_churners = df[df["PREDICTION_CHURN"] == 1].copy()
+nb_churners_total = len(df_churners)
 
-with sim_col1:
-    high_risk_sample = df[df["NIVEAU_RISQUE"] == "Élevé"]["CODE_CONTRAT"].head(10).tolist()
-    if not high_risk_sample:
-        high_risk_sample = df["CODE_CONTRAT"].head(5).tolist()
+camp_col1, camp_col2 = st.columns([1, 1])
+
+with camp_col1:
+    st.write("#### 1. Configuration de la Campagne Globale :")
+    st.write(f"👥 **Cible sélectionnée :** `{nb_churners_total:,} clients Churners` (100% des clients à risque)")
     
-    selected_client = st.selectbox("Sélectionner un client à risque élevé :", high_risk_sample)
-    client_row = df[df["CODE_CONTRAT"] == selected_client].iloc[0]
-    initial_prob = float(client_row["PROBABILITE_CHURN"])
-
-    st.warning(f"⚠️ **Score de Churn Actuel : {initial_prob * 100:.1f}% (Risque Élevé)**")
-    
-    selected_offer = st.selectbox(
-        "Offre de rétention personnalisée à appliquer :",
+    selected_mass_offer = st.selectbox(
+        "Sélectionner l'offre de rétention à envoyer à TOUS les churners :",
         [
+            "🤖 Ciblage Hybride Personnalisé (Attribution selon profil Big Data)",
             "🎁 Pass Data Boost (10 Go offerts immédiatement)",
             "💰 Bonus Recharge (+100% sur la prochaine recharge)",
             "👑 Offre Fidélité VIP (Appels illimités week-end + Remise 25%)",
-            "⚡ Forfait Duo Famille (Appels gratuits vers 2 numéros)"
+            "⚡ Forfait Duo Famille (Appels gratuits vers 2 numéros favoris)"
         ]
     )
-
-with sim_col2:
-    st.write("#### Simulation de l'Impact de l'Offre :")
-    # Réduction simulée selon l'offre
-    if "10 Go" in selected_offer:
-        reduction = 0.58
-    elif "+100%" in selected_offer:
-        reduction = 0.52
-    elif "VIP" in selected_offer:
-        reduction = 0.65
-    else:
-        reduction = 0.45
-
-    new_prob = max(initial_prob * (1 - reduction), 0.12)
     
-    st.write(f"• **Ancienne Probabilité de Churn :** `{initial_prob * 100:.1f} %`")
-    st.write(f"• **Nouvelle Probabilité Estimée :** `{new_prob * 100:.1f} %`")
-    st.write(f"• **Réduction du Risque :** `-{reduction * 100:.0f} %`")
+    # Message SMS simulé
+    if "Pass Data" in selected_mass_offer:
+        sms_preview = "Cher client, pour vous remercier de votre fidélité, votre opérateur vous offre 10 Go Internet gratuits valables immédiatement !"
+        taux_sauvetage = 0.58
+    elif "Bonus Recharge" in selected_mass_offer:
+        sms_preview = "Offre Spéciale : Rechargez dès aujourd'hui et profitez de +100% de bonus immédiat sur toutes vos recharges pendant 30 jours !"
+        taux_sauvetage = 0.52
+    elif "VIP" in selected_mass_offer:
+        sms_preview = "Statut VIP : Vos appels sont désormais illimités tous les week-ends + bénéficiez de 25% de remise sur votre facture !"
+        taux_sauvetage = 0.65
+    elif "Duo Famille" in selected_mass_offer:
+        sms_preview = "Offre Famille : Choisissez 2 numéros favoris et appelez-les gratuitement et en illimité dès aujourd'hui !"
+        taux_sauvetage = 0.48
+    else:  # Hybride
+        sms_preview = "Offre Proactive Ultra-Ciblée : Chaque client reçoit par SMS l'offre adaptée à son historique (Data, Recharge, VIP ou Voix)."
+        taux_sauvetage = 0.60
 
-    if st.button("🚀 Valider & Déclencher l'Offre de Rétention par SMS"):
-        st.success(f"🎉 **Client {selected_client} Sauvé !** L'offre '{selected_offer.split(':')[0]}' a été validée. Le risque de départ passe de {initial_prob*100:.1f}% à {new_prob*100:.1f}%.")
+    st.text_area("Aperçu du SMS envoyé en masse aux 6 001 clients :", sms_preview, height=85)
+
+with camp_col2:
+    st.write("#### 2. Impact Estimé de la Campagne Massive :")
+    
+    clients_sauves = int(nb_churners_total * taux_sauvetage)
+    taux_churn_post = ((nb_churners_total - clients_sauves) / total_clients) * 100
+    ca_sauve = clients_sauves * 25 * 12  # ARPU 25 DT/mois sur 1 an
+    
+    mc1, mc2 = st.columns(2)
+    mc1.metric("Clients Sauvés Estimés", f"{clients_sauves:,}", f"{taux_sauvetage*100:.0f}% d'acceptation")
+    mc2.metric("Nouveau Taux de Churn", f"{taux_churn_post:.1f} %", f"-{(taux_churn - taux_churn_post):.1f}% de baisse", delta_color="inverse")
+    
+    st.write(f"• **Chiffre d'Affaires Annuel Sauvé :** `{ca_sauve:,.0f} DT` (ARPU moyen de 25 DT/mois)")
+    st.write(f"• **Délai d'exécution Big Data :** `< 0.1 seconde` (Passage à l'action immédiat)")
+
+# Bouton d'action massif
+st.write("")
+if st.button("🚀 DÉCLENCHER L'ENVOI SMS MASSIF À TOUS LES 6 001 CLIENTS CHURNERS", use_container_width=True, type="primary"):
+    st.success(
+        f"🎉 **CAMPAGNE MASSIVE DÉCLENCHÉE AVEC SUCCÈS !**\n\n"
+        f"✅ **6 001 SMS** de rétention ont été générés et transmis à la passerelle opérateur.\n\n"
+        f"📊 **Résultat Prévisionnel :** **{clients_sauves:,} clients** sauvés de la résiliation "
+        f"(le taux de Churn chute de **{taux_churn:.1f}%** à **{taux_churn_post:.1f}%**).\n\n"
+        f"💰 **Impact Financier :** **{ca_sauve:,.0f} DT** de revenus préservés grâce à la vélocité Big Data."
+    )
+    
+    # Export du fichier de campagne massif
+    df_campagne = df_churners[["CODE_CONTRAT", "PROBABILITE_CHURN", "OFFRE_RETENTION"]].copy()
+    if "Hybride" not in selected_mass_offer:
+        df_campagne["OFFRE_RETENTION_APPLIQUEE"] = selected_mass_offer
+    else:
+        df_campagne["OFFRE_RETENTION_APPLIQUEE"] = df_campagne["OFFRE_RETENTION"]
+        
+    csv_campagne = df_campagne.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="📥 Télécharger le fichier d'envoi SMS Campagne Massive (6 001 lignes CSV)",
+        data=csv_campagne,
+        file_name="campagne_massive_retention_6001_clients.csv",
+        mime="text/csv"
+    )
